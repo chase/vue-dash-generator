@@ -1,0 +1,35 @@
+{
+  "name": "vue-dash-generator",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Generates a Dash Docset for Vue.js",
+  "author": "Chase Colman",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/chase/vue-dash-generator"
+  },
+  "keywords": [
+    "vue",
+    "dash",
+    "generator",
+    "docset",
+    "vuejs"
+  ],
+  "bugs": {
+    "url": "https://github.com/chase/vue-dash-generator/issues"
+  },
+  "homepage": "https://github.com/chase/vue-dash-generator",
+  "dependencies": {
+    "sqlite3": "~2.2.0",
+    "marked": "~0.3.2",
+    "through2": "~0.4.1",
+    "vinyl-buffer": "0.0.0",
+    "gulp-stylus": "~0.1.0",
+    "ect": "~0.5.6",
+    "gulp-git": "~0.3.6",
+    "gulp-rename": "~1.2.0",
+    "gulp": "~3.6.0",
+    "yamljs": "~0.1.4"
+  }
+}

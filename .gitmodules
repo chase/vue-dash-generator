@@ -1,0 +1,3 @@
+[submodule "vendor/vuejs-website"]
+	path = vendor/vuejs-website
+	url = https://github.com/vuejs/vuejs.org.git
