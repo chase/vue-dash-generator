@@ -30,6 +30,9 @@
     "gulp-git": "~0.3.6",
     "gulp-rename": "~1.2.0",
     "gulp": "~3.6.0",
-    "yamljs": "~0.1.4"
+    "yamljs": "~0.1.4",
+    "highlight.js": "~8.0.0",
+    "lodash": "~2.4.1",
+    "gulp-footer": "~1.0.4"
   }
 }

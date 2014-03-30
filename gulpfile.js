@@ -20,7 +20,7 @@ var templateEngine = ect({ root: __dirname + '/views' , ext: '.ect'})
 var docSet,
     indexAdd
 
-var marked = require('marked'),
+var marked   = require('marked'),
     renderer = require('./lib/marked-renderer')
 
 // Asset Management
