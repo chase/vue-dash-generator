@@ -4,6 +4,7 @@ var buffer = require('vinyl-buffer'),
     yaml   = require('yamljs'),
     rename = require('gulp-rename'),
     stylus = require('gulp-stylus'),
+    footer = require('gulp-footer'),
     ect    = require('ect'),
     sqlite = require('sqlite3'),
     gulp   = require('gulp')
@@ -39,6 +40,7 @@ gulp.task('copyLicense', ['copySkeleton'], function() {
 gulp.task('buildCSS', ['copySkeleton'], function(){
     return gulp.src('css/page.styl', { cwd: vuejsTheme })
         .pipe(stylus({ use: ['nib'] }))
+        .pipe(footer('a.dashAnchor { color: #2c3e50; }'))
         .pipe(gulp.dest(documents + '/css'))
 })
 
