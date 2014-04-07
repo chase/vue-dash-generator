@@ -1,13 +1,16 @@
-var buffer = require('vinyl-buffer'),
-    path   = require('path'),
-    map    = require('./lib/buffer-mapper'),
-    yaml   = require('yamljs'),
-    rename = require('gulp-rename'),
-    stylus = require('gulp-stylus'),
-    footer = require('gulp-footer'),
-    ect    = require('ect'),
-    sqlite = require('sqlite3'),
-    gulp   = require('gulp')
+var buffer   = require('vinyl-buffer'),
+    path     = require('path'),
+    map      = require('./lib/buffer-mapper'),
+    yaml     = require('yamljs'),
+    rename   = require('gulp-rename'),
+    stylus   = require('gulp-stylus'),
+    footer   = require('gulp-footer'),
+    filter   = require('gulp-filter'),
+    ect      = require('ect'),
+    sqlite   = require('sqlite3'),
+    gulp     = require('gulp'),
+    marked   = require('marked'),
+    renderer = require('./lib/marked-renderer')
 
 var vuejsWebsite = 'vendor/vuejs-website',
     vuejsSource  = vuejsWebsite + '/source',
@@ -18,39 +21,38 @@ var vuejsWebsite = 'vendor/vuejs-website',
 
 var templateEngine = ect({ root: __dirname + '/views' , ext: '.ect'})
 
+// Late definition in prepareDB
 var docSet,
     indexAdd
-
-var marked   = require('marked'),
-    renderer = require('./lib/marked-renderer')
 
 // Asset Management
 // =============
 gulp.task('copySkeleton', function(){
     var skeleton = 'assets/vuejs.docset-skeleton'
+
     return gulp.src(skeleton + '/**/*', { base: skeleton })
         .pipe(gulp.dest('build/vuejs.docset'))
 })
 
-gulp.task('copyLicense', ['copySkeleton'], function() {
+gulp.task('copyLicense', function() {
     return gulp.src('LICENSE')
         .pipe(gulp.dest(resources))
 })
 
-gulp.task('buildCSS', ['copySkeleton'], function(){
+gulp.task('buildCSS', function(){
     return gulp.src('css/page.styl', { cwd: vuejsTheme })
         .pipe(stylus({ use: ['nib'] }))
         .pipe(footer('a.dashAnchor { color: #2c3e50; }'))
         .pipe(gulp.dest(documents + '/css'))
 })
 
-gulp.task('copyJS', ['copySkeleton'], function(){
-    return gulp.src(['js/vue.min.js'], { cwd: vuejsTheme })
+gulp.task('copyJS', function(){
+    return gulp.src('js/vue.min.js', { cwd: vuejsTheme })
         .pipe(gulp.dest(documents + '/js'))
 })
 
 gulp.task('copyImages', function(){
-    return gulp.src(['images/*'], { cwd: vuejsTheme })
+    return gulp.src('images/*', { cwd: vuejsTheme })
         .pipe(gulp.dest(documents + '/images'))
 })
 
@@ -75,14 +77,17 @@ gulp.task('prepareDB', ['copySkeleton'], function(){
     })
 })
 
+// Document Management
+// =============
 // Generates docs while building the index using a customized Marked renderer
 function generateDoc(file) {
-    var contents = file.contents.toString().split('\n---\n')
-    var frontMatter = yaml.parse(contents[0])
-    contents = contents.splice(1).join('\n---\n')
-    relPath = path.relative(vuejsSource, file.path)
+    var contents    = file.contents.toString().split('\n---\n'),
+        frontMatter = yaml.parse(contents[0]),
+        relPath     = path.relative(vuejsSource, file.path),
+        type        = 'Section'
 
-    var type = 'Section'
+    // Contents without front matter
+    contents = contents.splice(1).join('\n---\n')
 
     switch (frontMatter.type) {
         case 'api':
@@ -115,18 +120,13 @@ function generateDoc(file) {
     marked.defaults.frontMatter = frontMatter
     marked.defaults.path = relPath
 
-    // Render the Markdown
-    var rendered = marked(contents)
-
-    // Then wrap it in the template
+    // Render the Markdown and wrap it in the template
     return new Buffer(templateEngine.render('template.ect', {
-        content: rendered,
+        content: marked(contents),
         page: frontMatter
     }))
 }
 
-// Document Management
-// =============
 gulp.task('generateDocs', ['prepareDB'], function(){
     return gulp.src(sources, { cwd: vuejsSource, cwdbase: true })
         .pipe(rename({ extname: '.html' }))
