@@ -109,9 +109,6 @@ function generateDoc(file) {
         case 'guide':
             type = 'Guide'
             break
-        case 'examples':
-            type = 'Sample'
-            break
     }
 
     indexAdd.run(frontMatter.title, type, relPath)
@@ -127,8 +124,13 @@ function generateDoc(file) {
     }))
 }
 
+// None of the examples work, because they rely on JSFiddle
+// Filter examples until there is a solution for offline archiving of JSFiddles
+var noExamples = filter('!examples/*')
+
 gulp.task('generateDocs', ['prepareDB'], function(){
     return gulp.src(sources, { cwd: vuejsSource, cwdbase: true })
+        .pipe(noExamples)
         .pipe(rename({ extname: '.html' }))
         .pipe(buffer())
         .pipe(map(generateDoc))
