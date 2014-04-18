@@ -122,6 +122,11 @@ function generateDoc(file) {
             break
     }
 
+    // Replace front-matter variables in files
+    Object.getOwnPropertyNames(frontMatter).forEach(function(property){
+        contents = contents.replace('{{'+property+'}}', frontMatter[property])
+    })
+
     indexAdd.run(frontMatter.title, type, relPath)
 
     // Set the required front matter and file path for the index
