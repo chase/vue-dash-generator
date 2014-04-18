@@ -42,7 +42,7 @@ gulp.task('copySkeleton', ['cleanBuild'], function(){
     var skeleton = 'assets/vuejs.docset-skeleton'
 
     return gulp.src(skeleton + '/**/*', { base: skeleton })
-        .pipe(gulp.dest('build/vuejs.docset'))
+        .pipe(gulp.dest('build/VueJS.docset'))
 })
 
 gulp.task('copyLicense', ['cleanBuild'], function(){
@@ -95,32 +95,10 @@ function generateDoc(file) {
     var contents    = file.contents.toString().split('\n---\n'),
         frontMatter = yaml.parse(contents[0]),
         relPath     = path.relative(vuejsSource, file.path),
-        type        = 'Section'
+        type        = 'Guide'
 
     // Contents without front matter
     contents = contents.splice(1).join('\n---\n')
-
-    switch (frontMatter.type) {
-        case 'api':
-            switch (frontMatter.title) {
-                case 'Instance Properties':
-                    type = 'Instance'
-                break
-                case 'Global Methods':
-                    type = 'Class'
-                break
-                case 'Instantiation Options':
-                    type = 'Constructor'
-                break
-                case 'Instance Methods':
-                    type = 'Instance'
-                break
-            }
-            break
-        case 'guide':
-            type = 'Guide'
-            break
-    }
 
     // Replace front-matter variables in files
     Object.getOwnPropertyNames(frontMatter).forEach(function(property){
@@ -142,11 +120,14 @@ function generateDoc(file) {
 
 // None of the examples work, because they rely on JSFiddle
 // Filter examples until there is a solution for offline archiving of JSFiddles
-var noExamples = filter('!examples/*')
+var noExamples    = '!examples/*',
+// The API index page was decided to be unfit in Kapeli/Dash-User-Contributions#7
+    noAPIIndex    = '!api/index.md',
+    docExclusions = filter([noExamples, noAPIIndex])
 
 gulp.task('generateDocs', ['prepareDB'], function(){
     return gulp.src(sources, { cwd: vuejsSource, cwdbase: true })
-        .pipe(noExamples)
+        .pipe(docExclusions)
         .pipe(rename({ extname: '.html' }))
         .pipe(buffer())
         .pipe(map(generateDoc))
@@ -161,7 +142,7 @@ gulp.task('default', ['cleanBuild', 'buildAssets', 'prepareDB', 'generateDocs'])
 
 // Publishing
 // ==========
-var contribution = 'build/Dash-User-Contributions/docsets/vuejs'
+var contribution = 'build/Dash-User-Contributions/docsets/VueJS'
 
 gulp.task('copyContributionSkeleton', function(){
     var skeleton = 'assets/vuejs-skeleton'
@@ -174,7 +155,7 @@ gulp.task('copyContributionSkeleton', function(){
 var noDSStore = filter('!**/.DS_Store')
 
 gulp.task('tarballDocset', function(){
-    return gulp.src('build/vuejs.docset/**/*', { base: 'build' } )
+    return gulp.src('build/VueJS.docset/**/*', { base: 'build' } )
         .pipe(noDSStore)
         .pipe(tar('VueJS.tar'))
         .pipe(gzip({ append: false }))
