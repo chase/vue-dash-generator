@@ -6,6 +6,9 @@ var buffer   = require('vinyl-buffer'),
     stylus   = require('gulp-stylus'),
     footer   = require('gulp-footer'),
     filter   = require('gulp-filter'),
+    clean    = require('gulp-clean'),
+    tar      = require('gulp-tar'),
+    gzip     = require('gulp-gzip'),
     ect      = require('ect'),
     sqlite   = require('sqlite3'),
     gulp     = require('gulp'),
@@ -25,33 +28,41 @@ var templateEngine = ect({ root: __dirname + '/views' , ext: '.ect'})
 var docSet,
     indexAdd
 
-// Asset Management
+// Build Cleanup
 // =============
-gulp.task('copySkeleton', function(){
+gulp.task('cleanBuild', function(){
+    return gulp.src('build/vuejs.docset', { read: false })
+        .pipe(clean())
+})
+
+
+// Asset Management
+// ================
+gulp.task('copySkeleton', ['cleanBuild'], function(){
     var skeleton = 'assets/vuejs.docset-skeleton'
 
     return gulp.src(skeleton + '/**/*', { base: skeleton })
         .pipe(gulp.dest('build/vuejs.docset'))
 })
 
-gulp.task('copyLicense', function() {
+gulp.task('copyLicense', ['cleanBuild'], function(){
     return gulp.src('LICENSE')
         .pipe(gulp.dest(resources))
 })
 
-gulp.task('buildCSS', function(){
+gulp.task('buildCSS', ['cleanBuild'], function(){
     return gulp.src('css/page.styl', { cwd: vuejsTheme })
         .pipe(stylus({ use: ['nib'] }))
         .pipe(footer('a.dashAnchor { color: #2c3e50; }'))
         .pipe(gulp.dest(documents + '/css'))
 })
 
-gulp.task('copyJS', function(){
+gulp.task('copyJS', ['cleanBuild'], function(){
     return gulp.src('js/vue.min.js', { cwd: vuejsTheme })
         .pipe(gulp.dest(documents + '/js'))
 })
 
-gulp.task('copyImages', function(){
+gulp.task('copyImages', ['cleanBuild'], function(){
     return gulp.src('images/*', { cwd: vuejsTheme })
         .pipe(gulp.dest(documents + '/images'))
 })
@@ -78,7 +89,7 @@ gulp.task('prepareDB', ['copySkeleton'], function(){
 })
 
 // Document Management
-// =============
+// ===================
 // Generates docs while building the index using a customized Marked renderer
 function generateDoc(file) {
     var contents    = file.contents.toString().split('\n---\n'),
@@ -137,4 +148,33 @@ gulp.task('generateDocs', ['prepareDB'], function(){
         .pipe(gulp.dest(documents))
 })
 
-gulp.task('default', ['buildAssets', 'prepareDB', 'generateDocs'])
+
+// Default Task
+// ============
+gulp.task('default', ['cleanBuild', 'buildAssets', 'prepareDB', 'generateDocs'])
+
+
+// Publishing
+// ==========
+var contribution = 'build/Dash-User-Contributions/docsets/vuejs'
+
+gulp.task('copyContributionSkeleton', function(){
+    var skeleton = 'assets/vuejs-skeleton'
+
+    return gulp.src(skeleton + '/**/*', { base: skeleton })
+        .pipe(gulp.dest(contribution))
+})
+
+// Prevents adding any .DS_Store file metadata files
+var noDSStore = filter('!**/.DS_Store')
+
+gulp.task('tarballDocset', function(){
+    return gulp.src('build/vuejs.docset/**/*', { base: 'build' } )
+        .pipe(noDSStore)
+        .pipe(tar('VueJS.tar'))
+        .pipe(gzip({ append: false }))
+        .pipe(rename({ extname: '.tgz' }))
+        .pipe(gulp.dest(contribution))
+})
+
+gulp.task('publish', ['copyContributionSkeleton', 'tarballDocset'])

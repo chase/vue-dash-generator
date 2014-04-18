@@ -1,3 +1,6 @@
 [submodule "vendor/vuejs-website"]
 	path = vendor/vuejs-website
 	url = https://github.com/vuejs/vuejs.org.git
+[submodule "build/Dash-User-Contributions"]
+	path = build/Dash-User-Contributions
+	url = https://chase@github.com/chase/Dash-User-Contributions.git
